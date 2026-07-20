@@ -81,10 +81,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "A premium personal JEE preparation OS. Track chapters, resources, mistakes, revisions and readiness — all in one dark, distraction-free workspace." },
       { name: "author", content: "JEE OS" },
       { name: "theme-color", content: "#0b0d10" },
-      { property: "og:title", content: "JEE OS — Personal Preparation OS" },
-      { property: "og:description", content: "Second brain for the serious JEE aspirant." },
+      { property: "og:title", content: "JEE OS — Your personal preparation operating system" },
+      { property: "og:description", content: "A premium personal JEE preparation OS. Track chapters, resources, mistakes, revisions and readiness — all in one dark, distraction-free workspace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "JEE OS — Your personal preparation operating system" },
+      { name: "twitter:description", content: "A premium personal JEE preparation OS. Track chapters, resources, mistakes, revisions and readiness — all in one dark, distraction-free workspace." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Eal0tHlA2fg29rJ8UXFtND6dVnG2/social-images/social-1784546785373-IMG_2458.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Eal0tHlA2fg29rJ8UXFtND6dVnG2/social-images/social-1784546785373-IMG_2458.webp" },
     ],
     links: [
       {
