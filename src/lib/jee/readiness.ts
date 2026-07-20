@@ -43,7 +43,8 @@ export function chapterBreakdown(c: ChapterState, mistakes: Mistake[] = []): Bre
 
   const chMistakes = mistakes;
   const cleared = chMistakes.filter((m) => m.status === "mastered").length;
-  const mistakesScore = chMistakes.length ? cleared / chMistakes.length : 1;
+  // No mistakes logged yet → 0 credit (was 1, which gave every empty chapter a baseline 5%).
+  const mistakesScore = chMistakes.length ? cleared / chMistakes.length : 0;
 
   return {
     lectures,
