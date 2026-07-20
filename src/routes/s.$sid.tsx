@@ -8,15 +8,15 @@ import { readinessScore, readinessBand } from "@/lib/jee/readiness";
 export const Route = createFileRoute("/s/$sid")({
   component: SubjectPage,
   loader: ({ params }) => {
-    const s = getSubject(params.sid);
-    if (!s) throw notFound();
-    return { subject: s };
+    if (!getSubject(params.sid)) throw notFound();
+    return { sid: params.sid };
   },
   notFoundComponent: () => <div className="p-8">Subject not found.</div>,
 });
 
 function SubjectPage() {
-  const { subject } = Route.useLoaderData();
+  const { sid } = Route.useLoaderData();
+  const subject = getSubject(sid)!;
   const chapters = useJeeStore((s) => s.chapters);
   const mistakes = useJeeStore((s) => s.mistakes);
   const getCh = useJeeStore((s) => s.getChapter);

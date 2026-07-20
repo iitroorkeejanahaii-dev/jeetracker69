@@ -30,13 +30,15 @@ export const Route = createFileRoute("/c/$cid")({
   loader: ({ params }) => {
     const ch = getChapter(params.cid);
     if (!ch) throw notFound();
-    return { chapter: ch, subject: getSubject(ch.subjectId)! };
+    return { cid: params.cid };
   },
   notFoundComponent: () => <div className="p-8">Chapter not found.</div>,
 });
 
 function ChapterPage() {
-  const { chapter, subject } = Route.useLoaderData();
+  const { cid } = Route.useLoaderData();
+  const chapter = getChapter(cid)!;
+  const subject = getSubject(chapter.subjectId)!;
   const state = useJeeStore((s) => s.chapters[chapter.id]) ?? emptyStateProxy();
   const mistakes = useJeeStore((s) => s.mistakes.filter((m) => m.chapterId === chapter.id));
   const s = useJeeStore.getState();
