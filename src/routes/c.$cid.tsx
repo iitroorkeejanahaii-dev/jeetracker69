@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AppShell } from "@/components/jee/AppShell";
 import { ProgressRing } from "@/components/jee/ProgressRing";
 import { getChapter, getSubject, ALLEN_SHEETS, PYQ_MAIN_YEARS, PYQ_ADV_YEARS } from "@/lib/jee/seed";
@@ -40,7 +40,11 @@ function ChapterPage() {
   const chapter = getChapter(cid)!;
   const subject = getSubject(chapter.subjectId)!;
   const state = useJeeStore((s) => s.chapters[chapter.id]) ?? emptyStateProxy();
-  const mistakes = useJeeStore((s) => s.mistakes.filter((m) => m.chapterId === chapter.id));
+  const allMistakes = useJeeStore((s) => s.mistakes);
+  const mistakes = useMemo(
+    () => allMistakes.filter((m) => m.chapterId === chapter.id),
+    [allMistakes, chapter.id],
+  );
   const s = useJeeStore.getState();
 
   const score = readinessScore(state, mistakes);
