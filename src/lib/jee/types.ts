@@ -1,5 +1,4 @@
 export type TriState = "none" | "progress" | "done";
-
 export type Priority = "normal" | "focus" | "priority" | "critical";
 
 export interface Concept {
@@ -29,32 +28,13 @@ export interface DreamCollege {
   name: string;
   targetRank: number;
   requiredMarks: number;
-  rating: number; // 1-5
+  rating: number;
 }
 
 export interface CurrentMission {
-  weekStart: string; // ISO date (Monday)
+  weekStart: string;
   chapterIds: string[];
   completed: boolean;
-}
-
-export interface Chapter {
-  id: string;
-  name: string;
-  subjectId: string;
-  unitId: string;
-}
-export interface Unit {
-  id: string;
-  name: string;
-  chapters: Chapter[];
-}
-export interface Subject {
-  id: string;
-  name: string;
-  short: string;
-  colorVar: string;
-  units: Unit[];
 }
 
 export interface Lecture {
@@ -65,18 +45,21 @@ export interface Lecture {
   timeMin?: number;
   notes?: string;
 }
+
 export interface ListItem {
   id: string;
   title: string;
   done: boolean;
   starred?: boolean;
 }
+
 export interface Resource {
   id: string;
   name: string;
   items: ListItem[];
 }
-export interface Revision {
+
+export interface ScheduledRevision {
   id: string;
   date: string;
   timeMin: number;
@@ -84,10 +67,23 @@ export interface Revision {
   weakConcepts: string;
   notes: string;
   completionPct: number;
+  nextScheduledDate?: string;
+  revisionCount: number;
 }
 
 export interface ChapterState {
+  id: string;
+  subjectId: string;
+  chapterName: string;
+  lectureCount: number;
+  sheetCount: number;
+  dppCount: number;
+  pyqCount: number;
+  revisionTarget: number;
   lectures: Lecture[];
+  sheets: ListItem[];
+  dpps: ListItem[];
+  pyqs: ListItem[];
   notes: {
     class: boolean;
     short: boolean;
@@ -95,13 +91,8 @@ export interface ChapterState {
     mindmap: boolean;
     flashcards: boolean;
   };
-  allen: Record<string, TriState>;
-  iitSheets: ListItem[];
-  allenAssignments: ListItem[];
   resources: Resource[];
-  pyqMain: Record<string, boolean>;
-  pyqAdv: Record<string, boolean>;
-  revisions: Revision[];
+  revisions: ScheduledRevision[];
   formula: {
     formulaSheet: boolean;
     ncert: boolean;
@@ -116,6 +107,8 @@ export interface ChapterState {
   priority?: Priority;
   concepts?: Concept[];
   lastActivity?: LastActivity;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface OrganicState {
@@ -131,10 +124,13 @@ export type MistakeType =
   | "formula"
   | "time";
 export type MistakeStatus = "pending" | "revised" | "mastered";
+
 export interface Mistake {
   id: string;
   subjectId: string;
   chapterId: string;
+  topic?: string;
+  errorType?: string;
   resource: string;
   qNumber: string;
   difficulty: "easy" | "medium" | "hard";
@@ -143,8 +139,15 @@ export interface Mistake {
   explanation: string;
   correctMethod: string;
   image?: string;
+  solutionImage?: string;
   status: MistakeStatus;
   createdAt: string;
+  lastRevised?: string;
+  nextRevision?: string;
+  revisionCount: number;
+  importance: number;
+  tags?: string[];
+  starred?: boolean;
 }
 
 export interface DailyLog {
@@ -180,4 +183,26 @@ export interface MockTest {
 export interface AppSettings {
   name: string;
   targetYear: number;
+  migrationComplete?: boolean;
+}
+
+export interface Chapter {
+  id: string;
+  name: string;
+  subjectId: string;
+  unitId: string;
+}
+
+export interface Unit {
+  id: string;
+  name: string;
+  chapters: Chapter[];
+}
+
+export interface Subject {
+  id: string;
+  name: string;
+  short: string;
+  colorVar: string;
+  units: Unit[];
 }

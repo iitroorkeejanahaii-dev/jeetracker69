@@ -80,7 +80,12 @@ export function getTopChaptersByReadiness(
   limit = 5
 ): ChapterSummary[] {
   return Object.values(chapters)
-    .map((ch) => getChapterSummary(ch, mistakes.filter((m) => m.chapterId === ch.id)))
+    .map((ch) =>
+      getChapterSummary(
+        ch,
+        mistakes.filter((m) => m.chapterId === ch.id)
+      )
+    )
     .sort((a, b) => b.readiness - a.readiness)
     .slice(0, limit);
 }
@@ -91,7 +96,12 @@ export function getBottomChaptersByReadiness(
   limit = 5
 ): ChapterSummary[] {
   return Object.values(chapters)
-    .map((ch) => getChapterSummary(ch, mistakes.filter((m) => m.chapterId === ch.id)))
+    .map((ch) =>
+      getChapterSummary(
+        ch,
+        mistakes.filter((m) => m.chapterId === ch.id)
+      )
+    )
     .sort((a, b) => a.readiness - b.readiness)
     .slice(0, limit);
 }
