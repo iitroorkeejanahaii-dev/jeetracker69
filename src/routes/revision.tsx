@@ -1,72 +1,123 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/jee/AppShell";
 import { useJeeStore } from "@/lib/jee/store";
-import { ALL_CHAPTERS } from "@/lib/jee/seed";
-import { daysSince } from "@/lib/jee/readiness";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/revision")({
   component: RevisionPage,
-  head: () => ({ meta: [{ title: "Revision Center — JEE OS" }] }),
+  head: () => ({ meta: [{ title: "Revisions — JEE OS" }] }),
 });
 
 function RevisionPage() {
-  const getCh = useJeeStore((s) => s.getChapter);
+  const chapters = useJeeStore((s) => s.chapters);
+  const getRevisionsForToday = useJeeStore((s) => s.getRevisionsForToday);
+  const getOverdueRevisions = useJeeStore((s) => s.getOverdueRevisions);
+  const completeRevision = useJeeStore((s) => s.completeRevision);
+  const removeRevision = useJeeStore((s) => s.removeRevision);
+  const [view, setView] = useState<"today" | "overdue" | "upcoming">("today");
 
-  const rows = ALL_CHAPTERS.map((c) => {
-    const state = getCh(c.id);
-    const last = state.revisions[state.revisions.length - 1];
-    const since = last ? daysSince(last.date) ?? 0 : Infinity;
-    return { c, state, last, since };
-  });
+  const revisionsToday = getRevisionsForToday();
+  const overdueRevisions = getOverdueRevisions();
 
-  const due = rows.filter((r) => r.last && r.since >= 5).sort((a, b) => b.since - a.since);
-  const scheduled = rows.filter((r) => r.last && r.since < 5).sort((a, b) => a.since - b.since);
-  const never = rows.filter((r) => !r.last);
+  const getChapterName = (chapterId: string) => {
+    return chapters[chapterId]?.chapterName || "Unknown chapter";
+  };
+
+  const renderRevisions = (revisions: typeof revisionsToday) => {
+    if (revisions.length === 0) {
+      return (
+        <div className="text-center py-10 text-muted-foreground">
+          No revisions {view === "today" ? "due today" : "to show"}.
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {revisions.map((rev) => (
+          <div
+            key={rev.id}
+            className="rounded-lg border border-border/60 bg-card p-4 flex items-center justify-between"
+          >
+            <div className="flex-1">
+              <h3 className="font-semibold text-sm">
+                {getChapterName(Object.entries(chapters).find(([id, ch]) => ch.revisions.includes(rev))?.[0] || "")}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Revision #{rev.revisionCount} · {rev.timeMin}m · Confidence: {rev.confidence}/5
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                onClick={() => {
+                  const chId = Object.entries(chapters).find(
+                    ([id, ch]) => ch.revisions.includes(rev)
+                  )?.[0];
+                  if (chId) completeRevision(chId, rev.id);
+                }}
+              >
+                Done
+              </Button>
+              <button
+                onClick={() => {
+                  const chId = Object.entries(chapters).find(
+                    ([id, ch]) => ch.revisions.includes(rev)
+                  )?.[0];
+                  if (chId) removeRevision(chId, rev.id);
+                }}
+                className="text-muted-foreground/50 hover:text-red-400"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <AppShell>
-      <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-8">
+      <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
         <header>
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Cycle</div>
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Revision Center</h1>
-          <p className="text-sm text-muted-foreground mt-1">Spaced-repetition style overview across every chapter you've touched.</p>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            Schedule
+          </div>
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+            Revision Engine
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Automatic scheduling keeps concepts fresh in memory.
+          </p>
         </header>
 
-        <Bucket title="Due now" tone="text-amber-400" list={due} empty="Nothing overdue. Nice discipline."/>
-        <Bucket title="On track" tone="text-emerald-400" list={scheduled} empty="Log a revision from any chapter workspace."/>
-        <Bucket title="Never revised" tone="text-red-400" list={never as any} empty="You've revised every chapter at least once. Elite."/>
+        <div className="flex gap-2">
+          <Button
+            variant={view === "today" ? "default" : "ghost"}
+            onClick={() => setView("today")}
+            className="flex-1 md:flex-none"
+          >
+            Today ({revisionsToday.length})
+          </Button>
+          <Button
+            variant={view === "overdue" ? "default" : "ghost"}
+            onClick={() => setView("overdue")}
+            className="flex-1 md:flex-none"
+          >
+            Overdue ({overdueRevisions.length})
+          </Button>
+        </div>
+
+        <div className="rounded-2xl border border-border/60 bg-card p-5">
+          {view === "today" && renderRevisions(revisionsToday)}
+          {view === "overdue" && renderRevisions(overdueRevisions)}
+        </div>
       </div>
     </AppShell>
-  );
-}
-
-function Bucket({ title, tone, list, empty }: { title: string; tone: string; list: { c: any; state: any; last?: any; since: number }[]; empty: string }) {
-  return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className={`text-sm font-mono uppercase tracking-widest ${tone}`}>{title}</h2>
-        <span className="text-[10px] font-mono text-muted-foreground">{list.length}</span>
-      </div>
-      {list.length ? (
-        <ul className="divide-y divide-border/50 rounded-2xl border border-border/60 bg-card">
-          {list.map(({ c, state, last, since }) => (
-            <li key={c.id}>
-              <Link to="/c/$cid" params={{ cid: c.id }} className="flex items-center gap-3 p-3 hover:bg-white/[0.03]">
-                <div className="size-8 rounded-md bg-white/[0.04] grid place-items-center text-[10px] font-mono text-muted-foreground">{c.subjectId.toUpperCase()}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{c.name}</div>
-                  <div className="text-[11px] text-muted-foreground font-mono">
-                    {last ? `${state.revisions.length} revisions · last ${new Date(last.date).toLocaleDateString()} · conf ${last.confidence}/5` : "Not revised yet"}
-                  </div>
-                </div>
-                {last && <span className={`text-xs font-mono ${since >= 7 ? "text-amber-400" : "text-emerald-400"}`}>{since}d</span>}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className="rounded-2xl border border-dashed border-border/60 p-6 text-sm text-muted-foreground text-center">{empty}</div>
-      )}
-    </section>
   );
 }

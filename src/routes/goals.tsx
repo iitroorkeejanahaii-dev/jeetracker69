@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/jee/AppShell";
 import { useJeeStore } from "@/lib/jee/store";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/goals")({
   component: GoalsPage,
@@ -16,55 +16,90 @@ function GoalsPage() {
   const addGoal = useJeeStore((s) => s.addGoal);
   const updateGoal = useJeeStore((s) => s.updateGoal);
   const removeGoal = useJeeStore((s) => s.removeGoal);
-
   const [title, setTitle] = useState("");
-  const [target, setTarget] = useState("100");
   const [unit, setUnit] = useState("questions");
-  const [deadline, setDeadline] = useState("");
+  const [target, setTarget] = useState("100");
+
+  const handleAdd = () => {
+    if (!title.trim()) return;
+    addGoal({
+      title: title.trim(),
+      unit,
+      target: parseInt(target) || 0,
+      current: 0,
+    });
+    setTitle("");
+    setTarget("100");
+  };
 
   return (
     <AppShell>
       <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
         <header>
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Commitments</div>
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Goals</h1>
+          <h1 className="text-3xl font-bold">Goals</h1>
+          <p className="text-muted-foreground mt-1">Track your weekly and monthly targets.</p>
         </header>
 
-        <form
-          onSubmit={(e)=>{ e.preventDefault(); if(!title.trim()) return; addGoal({ title, target: Number(target)||0, unit, deadline: deadline || undefined, current: 0 }); setTitle(""); }}
-          className="rounded-2xl border border-border/60 bg-card p-4 grid grid-cols-1 md:grid-cols-5 gap-2"
-        >
-          <Input placeholder="Goal (Finish Mechanics)" value={title} onChange={(e)=>setTitle(e.target.value)} className="md:col-span-2"/>
-          <Input placeholder="Target" type="number" value={target} onChange={(e)=>setTarget(e.target.value)} />
-          <Input placeholder="Unit" value={unit} onChange={(e)=>setUnit(e.target.value)} />
-          <Input placeholder="Deadline" type="date" value={deadline} onChange={(e)=>setDeadline(e.target.value)} />
-          <Button type="submit" className="md:col-span-5">Add goal</Button>
-        </form>
+        <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-3">
+          <h2 className="font-semibold text-sm">New goal</h2>
+          <Input
+            placeholder="Goal title (e.g., Complete Mechanics)"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              type="number"
+              placeholder="Target"
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+            />
+            <Input
+              placeholder="Unit (e.g., questions)"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+            />
+          </div>
+          <Button onClick={handleAdd} className="w-full">Add goal</Button>
+        </div>
 
-        <div className="space-y-3">
-          {goals.map((g) => {
-            const pct = Math.min(100, (g.current / Math.max(g.target, 1)) * 100);
+        <div className="space-y-2">
+          {goals.map((goal) => {
+            const percent = goal.target > 0 ? (goal.current / goal.target) * 100 : 0;
             return (
-              <div key={g.id} className="rounded-xl border border-border/60 bg-card p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium">{g.title}</div>
-                    <div className="text-[11px] text-muted-foreground font-mono">
-                      {g.current}/{g.target} {g.unit}{g.deadline ? ` · by ${g.deadline}` : ""}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input type="number" value={g.current} onChange={(e)=>updateGoal(g.id, { current: Number(e.target.value)||0 })} className="h-8 w-20 text-xs" />
-                    <button onClick={()=>removeGoal(g.id)} className="text-muted-foreground/50 hover:text-red-400"><Trash2 className="size-3.5"/></button>
-                  </div>
+              <div
+                key={goal.id}
+                className="rounded-lg border border-border/60 bg-card p-4"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold">{goal.title}</h3>
+                  <button
+                    onClick={() => removeGoal(goal.id)}
+                    className="text-muted-foreground/50 hover:text-red-400"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
                 </div>
-                <div className="mt-3 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-                  <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }}/>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>
+                    {goal.current} / {goal.target} {goal.unit}
+                  </span>
+                  <div className="flex-1 h-1.5 bg-border/40 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all"
+                      style={{ width: `${Math.min(percent, 100)}%` }}
+                    />
+                  </div>
+                  <span className="font-mono">{Math.round(percent)}%</span>
                 </div>
               </div>
             );
           })}
-          {!goals.length && <div className="rounded-xl border border-dashed border-border/60 p-8 text-center text-sm text-muted-foreground">Set your first goal — "Complete GOC before 30 July", "10000 questions".</div>}
+          {goals.length === 0 && (
+            <div className="text-center py-10 text-muted-foreground">
+              No goals yet. Create one to track progress.
+            </div>
+          )}
         </div>
       </div>
     </AppShell>
