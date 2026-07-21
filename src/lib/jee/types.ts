@@ -1,5 +1,43 @@
 export type TriState = "none" | "progress" | "done";
 
+export type Priority = "normal" | "focus" | "priority" | "critical";
+
+export interface Concept {
+  id: string;
+  title: string;
+  done: boolean;
+}
+
+export interface LastActivity {
+  type: "lecture" | "exercise" | "pyq" | "revision" | "concept" | "resource";
+  label: string;
+  at: string;
+}
+
+export interface Destination {
+  college: string;
+  targetRank: number;
+  targetPercentile: number;
+  targetMarksJan: number;
+  targetMarksApr: number;
+  examDate?: string;
+  quote?: string;
+}
+
+export interface DreamCollege {
+  id: string;
+  name: string;
+  targetRank: number;
+  requiredMarks: number;
+  rating: number; // 1-5
+}
+
+export interface CurrentMission {
+  weekStart: string; // ISO date (Monday)
+  chapterIds: string[];
+  completed: boolean;
+}
+
 export interface Chapter {
   id: string;
   name: string;
@@ -75,6 +113,14 @@ export interface ChapterState {
   confidence: number;
   hoursSpent: number;
   lastStudied?: string;
+  priority?: Priority;
+  concepts?: Concept[];
+  lastActivity?: LastActivity;
+}
+
+export interface OrganicState {
+  reactions: Record<string, { done: boolean; note?: string; pyqCount?: number }>;
+  reagents: Record<string, { note?: string }>;
 }
 
 export type MistakeType =
