@@ -9,6 +9,7 @@ export interface Breakdown {
   pyq: number;
   revisions: number;
   mistakes: number;
+  mastery: number;
 }
 
 export function chapterBreakdown(c: ChapterState, mistakes: Mistake[] = []): Breakdown {
@@ -46,6 +47,9 @@ export function chapterBreakdown(c: ChapterState, mistakes: Mistake[] = []): Bre
   // No mistakes logged yet → 0 credit (was 1, which gave every empty chapter a baseline 5%).
   const mistakesScore = chMistakes.length ? cleared / chMistakes.length : 0;
 
+  const concepts = c.concepts ?? [];
+  const mastery = concepts.length ? concepts.filter((k) => k.done).length / concepts.length : 0;
+
   return {
     lectures,
     notes,
@@ -54,16 +58,18 @@ export function chapterBreakdown(c: ChapterState, mistakes: Mistake[] = []): Bre
     pyq,
     revisions,
     mistakes: mistakesScore,
+    mastery,
   };
 }
 
 export const WEIGHTS = {
-  lectures: 0.2,
+  lectures: 0.15,
   notes: 0.1,
   allen: 0.2,
-  resources: 0.15,
+  resources: 0.1,
   pyq: 0.15,
   revisions: 0.15,
+  mastery: 0.1,
   mistakes: 0.05,
 };
 
@@ -76,6 +82,7 @@ export function readinessScore(c: ChapterState, mistakes: Mistake[] = []): numbe
     b.resources * WEIGHTS.resources +
     b.pyq * WEIGHTS.pyq +
     b.revisions * WEIGHTS.revisions +
+    b.mastery * WEIGHTS.mastery +
     b.mistakes * WEIGHTS.mistakes;
   return Math.round(raw * 100);
 }
