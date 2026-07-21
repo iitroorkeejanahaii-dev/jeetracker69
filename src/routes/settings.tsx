@@ -13,6 +13,8 @@ export const Route = createFileRoute("/settings")({
 function SettingsPage() {
   const settings = useJeeStore((s) => s.settings);
   const setSettings = useJeeStore((s) => s.setSettings);
+  const destination = useJeeStore((s) => s.destination);
+  const setDestination = useJeeStore((s) => s.setDestination);
   const exportData = useJeeStore((s) => s.exportData);
   const importData = useJeeStore((s) => s.importData);
   const reset = useJeeStore((s) => s.reset);
@@ -61,6 +63,22 @@ function SettingsPage() {
         </div>
 
         <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-4">
+          <h2 className="text-sm font-semibold">Destination</h2>
+          <p className="text-xs text-muted-foreground">The dream on your dashboard. Change it whenever it changes.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Field label="Dream college"><Input value={destination.college} onChange={(e)=>setDestination({ college: e.target.value })}/></Field>
+            <Field label="Exam date (optional)"><Input type="date" value={destination.examDate ?? ""} onChange={(e)=>setDestination({ examDate: e.target.value || undefined })}/></Field>
+            <Field label="Target rank"><Input type="number" value={destination.targetRank} onChange={(e)=>setDestination({ targetRank: Number(e.target.value)||0 })}/></Field>
+            <Field label="Target percentile"><Input type="number" step="0.01" value={destination.targetPercentile} onChange={(e)=>setDestination({ targetPercentile: Number(e.target.value)||0 })}/></Field>
+            <Field label="Target marks — Jan"><Input type="number" value={destination.targetMarksJan} onChange={(e)=>setDestination({ targetMarksJan: Number(e.target.value)||0 })}/></Field>
+            <Field label="Target marks — Apr"><Input type="number" value={destination.targetMarksApr} onChange={(e)=>setDestination({ targetMarksApr: Number(e.target.value)||0 })}/></Field>
+            <div className="md:col-span-2">
+              <Field label="Motivation quote (optional)"><Input value={destination.quote ?? ""} onChange={(e)=>setDestination({ quote: e.target.value })}/></Field>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-4">
           <h2 className="text-sm font-semibold">Backup</h2>
           <p className="text-xs text-muted-foreground">All data is stored locally on this device. Export a JSON backup regularly.</p>
           <div className="flex flex-wrap gap-2">
@@ -77,5 +95,14 @@ function SettingsPage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="text-xs text-muted-foreground">{label}</label>
+      {children}
+    </div>
   );
 }

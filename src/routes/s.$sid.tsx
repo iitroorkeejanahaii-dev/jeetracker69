@@ -4,6 +4,8 @@ import { ProgressRing } from "@/components/jee/ProgressRing";
 import { getSubject } from "@/lib/jee/seed";
 import { useJeeStore } from "@/lib/jee/store";
 import { readinessScore, readinessBand } from "@/lib/jee/readiness";
+import { Star, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/s/$sid")({
   component: SubjectPage,
@@ -59,16 +61,25 @@ function SubjectPage() {
                   const chMist = mistakes.filter((m) => m.chapterId === c.id);
                   const score = readinessScore(state, chMist);
                   const band = readinessBand(score);
+                  const p = state.priority ?? "normal";
+                  const isGold = p === "priority" || p === "critical";
                   return (
                     <Link
                       key={c.id}
                       to="/c/$cid"
                       params={{ cid: c.id }}
-                      className="group rounded-xl bg-card border border-border/60 p-4 hover:border-primary/40 transition"
+                      className={cn(
+                        "group rounded-xl bg-card border p-4 hover:border-primary/40 transition",
+                        isGold ? "border-[color:var(--gold)]/40 glow-priority" : "border-border/60",
+                        p === "critical" && "glow-gold",
+                      )}
                     >
                       <div className="flex items-start justify-between">
                         <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">{c.name}</div>
+                          <div className="text-sm font-medium truncate flex items-center gap-1.5">
+                            {isGold && <Star className="size-3 text-[color:var(--gold)] fill-[color:var(--gold)]"/>}
+                            {c.name}
+                          </div>
                           <div className={`text-[11px] mt-0.5 ${band.tone}`}>{band.label}</div>
                         </div>
                         <div className="text-right">
@@ -79,12 +90,9 @@ function SubjectPage() {
                       <div className="mt-3 h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
                         <div className="h-full bg-primary transition-all" style={{ width: `${score}%` }} />
                       </div>
-                      <div className="mt-2 flex items-center gap-3 text-[10px] text-muted-foreground font-mono">
-                        <span>{state.lectures.filter((l) => l.done).length}/{state.lectures.length} lec</span>
-                        <span>·</span>
-                        <span>{state.revisions.length} rev</span>
-                        <span>·</span>
-                        <span>{chMist.length} mist</span>
+                      <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                        <span>{state.lectures.filter((l) => l.done).length}/{state.lectures.length} lec · {state.revisions.length} rev</span>
+                        <span className="text-primary flex items-center gap-1 group-hover:gap-1.5 transition-all">Continue <ArrowRight className="size-3"/></span>
                       </div>
                     </Link>
                   );

@@ -11,6 +11,8 @@ import {
   Target,
   Settings as SettingsIcon,
   Plus,
+  FlaskRound,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useJeeStore } from "@/lib/jee/store";
@@ -22,9 +24,11 @@ const nav = [
   { to: "/s/phy", label: "Physics", icon: Atom },
   { to: "/s/che", label: "Chemistry", icon: FlaskConical },
   { to: "/s/mat", label: "Mathematics", icon: Sigma },
+  { to: "/organic", label: "Organic Hub", icon: FlaskRound },
   { to: "/mistakes", label: "Mistakes", icon: XCircle },
   { to: "/revision", label: "Revision", icon: RotateCcw },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/colleges", label: "Colleges", icon: GraduationCap },
   { to: "/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/goals", label: "Goals", icon: Target },
   { to: "/settings", label: "Settings", icon: SettingsIcon },

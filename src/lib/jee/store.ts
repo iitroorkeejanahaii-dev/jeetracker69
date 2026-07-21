@@ -4,10 +4,17 @@ import { nanoid } from "nanoid";
 import type {
   AppSettings,
   ChapterState,
+  CurrentMission,
   DailyLog,
+  Destination,
+  DreamCollege,
   Goal,
+  LastActivity,
   Mistake,
   MockTest,
+  OrganicState,
+  Priority,
+  Concept,
   Resource,
   TriState,
 } from "./types";
@@ -38,6 +45,8 @@ const emptyChapter = (): ChapterState => ({
   },
   confidence: 0,
   hoursSpent: 0,
+  priority: "normal",
+  concepts: [],
 });
 
 interface State {
@@ -49,6 +58,11 @@ interface State {
   settings: AppSettings;
   streak: number;
   lastActiveDate?: string;
+  destination: Destination;
+  dreamColleges: DreamCollege[];
+  currentMission?: CurrentMission;
+  hallOfFocus: string[];
+  organic: OrganicState;
 
   getChapter: (id: string) => ChapterState;
   updateChapter: (id: string, updater: (c: ChapterState) => void) => void;
@@ -94,6 +108,24 @@ interface State {
   reset: () => void;
   importData: (data: unknown) => void;
   exportData: () => string;
+
+  setDestination: (patch: Partial<Destination>) => void;
+  addDreamCollege: (c: Omit<DreamCollege, "id">) => void;
+  updateDreamCollege: (id: string, patch: Partial<DreamCollege>) => void;
+  removeDreamCollege: (id: string) => void;
+  setMission: (chapterIds: string[]) => void;
+  completeMission: () => void;
+  clearMission: () => void;
+  setPriority: (chapterId: string, p: Priority) => void;
+  addConcept: (chapterId: string, title: string) => void;
+  toggleConcept: (chapterId: string, id: string) => void;
+  removeConcept: (chapterId: string, id: string) => void;
+  seedConcepts: (chapterId: string, titles: string[]) => void;
+  setLastActivity: (chapterId: string, a: LastActivity) => void;
+  setHallOfFocus: (ids: string[]) => void;
+  toggleReaction: (id: string) => void;
+  setReactionNote: (id: string, note: string) => void;
+  setReagentNote: (id: string, note: string) => void;
 }
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -117,13 +149,26 @@ export const useJeeStore = create<State>()(
       settings: { name: "Aspirant", targetYear: new Date().getFullYear() + 1 },
       streak: 0,
       lastActiveDate: undefined,
+      destination: {
+        college: "IIT Bombay",
+        targetRank: 500,
+        targetPercentile: 99.9,
+        targetMarksJan: 260,
+        targetMarksApr: 275,
+        examDate: undefined,
+        quote: "One chapter closer, every day.",
+      },
+      dreamColleges: [],
+      currentMission: undefined,
+      hallOfFocus: [],
+      organic: { reactions: {}, reagents: {} },
 
       getChapter: (id) => get().chapters[id] ?? emptyChapter(),
 
       updateChapter: (id, updater) =>
         set((s) => {
           const current = s.chapters[id] ?? emptyChapter();
-          const clone = structuredClone(current);
+          const clone = structuredClone({ ...emptyChapter(), ...current });
           updater(clone);
           clone.lastStudied = new Date().toISOString();
           return { chapters: { ...s.chapters, [id]: clone } };
@@ -159,12 +204,15 @@ export const useJeeStore = create<State>()(
       },
       toggleLecture: (chapterId, lectureId) => {
         let done = false;
+        let label = "";
         get().updateChapter(chapterId, (c) => {
           const l = c.lectures.find((x) => x.id === lectureId);
           if (l) {
             l.done = !l.done;
             done = l.done;
+            label = l.title;
             if (l.done) l.date = new Date().toISOString();
+            c.lastActivity = { type: "lecture", label: l.title, at: new Date().toISOString() };
           }
         });
         if (done) get().markActivity({ tasks: 1 });
@@ -324,9 +372,59 @@ export const useJeeStore = create<State>()(
           set(data as Partial<State> as State);
         }
       },
+
+      setDestination: (patch) => set((s) => ({ destination: { ...s.destination, ...patch } })),
+      addDreamCollege: (c) => set((s) => ({ dreamColleges: [{ ...c, id: nanoid(6) }, ...s.dreamColleges] })),
+      updateDreamCollege: (id, patch) => set((s) => ({ dreamColleges: s.dreamColleges.map((c) => (c.id === id ? { ...c, ...patch } : c)) })),
+      removeDreamCollege: (id) => set((s) => ({ dreamColleges: s.dreamColleges.filter((c) => c.id !== id) })),
+      setMission: (chapterIds) => set(() => ({ currentMission: { weekStart: mondayISO(), chapterIds, completed: false } })),
+      completeMission: () => set((s) => (s.currentMission ? { currentMission: { ...s.currentMission, completed: true } } : {})),
+      clearMission: () => set(() => ({ currentMission: undefined })),
+      setPriority: (chapterId, p) => get().updateChapter(chapterId, (c) => { c.priority = p; }),
+      addConcept: (chapterId, title) => get().updateChapter(chapterId, (c) => { c.concepts = c.concepts ?? []; c.concepts.push({ id: nanoid(6), title, done: false }); }),
+      toggleConcept: (chapterId, id) => {
+        let done = false;
+        let label = "";
+        get().updateChapter(chapterId, (c) => {
+          c.concepts = c.concepts ?? [];
+          const k = c.concepts.find((x) => x.id === id);
+          if (k) {
+            k.done = !k.done;
+            done = k.done;
+            label = k.title;
+            if (done) c.lastActivity = { type: "concept", label: k.title, at: new Date().toISOString() };
+          }
+        });
+        if (done) get().markActivity({ tasks: 1 });
+      },
+      removeConcept: (chapterId, id) => get().updateChapter(chapterId, (c) => { c.concepts = (c.concepts ?? []).filter((x) => x.id !== id); }),
+      seedConcepts: (chapterId, titles) => get().updateChapter(chapterId, (c) => {
+        if (!c.concepts || c.concepts.length === 0) {
+          c.concepts = titles.map((t) => ({ id: nanoid(6), title: t, done: false }));
+        }
+      }),
+      setLastActivity: (chapterId, a) => get().updateChapter(chapterId, (c) => { c.lastActivity = a; }),
+      setHallOfFocus: (ids) => set(() => ({ hallOfFocus: ids.slice(0, 3) })),
+      toggleReaction: (id) => set((s) => {
+        const cur = s.organic.reactions[id] ?? { done: false };
+        return { organic: { ...s.organic, reactions: { ...s.organic.reactions, [id]: { ...cur, done: !cur.done } } } };
+      }),
+      setReactionNote: (id, note) => set((s) => {
+        const cur = s.organic.reactions[id] ?? { done: false };
+        return { organic: { ...s.organic, reactions: { ...s.organic.reactions, [id]: { ...cur, note } } } };
+      }),
+      setReagentNote: (id, note) => set((s) => ({ organic: { ...s.organic, reagents: { ...s.organic.reagents, [id]: { note } } } })),
     }),
     { name: "jee-os-v1" },
   ),
 );
 
 export { emptyChapter };
+
+function mondayISO() {
+  const d = new Date();
+  const day = d.getDay(); // 0 Sun ... 6 Sat
+  const diff = (day + 6) % 7; // days since Monday
+  d.setDate(d.getDate() - diff);
+  return d.toISOString().slice(0, 10);
+}

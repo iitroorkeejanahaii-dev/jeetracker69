@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RevisionRouteImport } from './routes/revision'
+import { Route as OrganicRouteImport } from './routes/organic'
 import { Route as MistakesRouteImport } from './routes/mistakes'
 import { Route as GoalsRouteImport } from './routes/goals'
+import { Route as CollegesRouteImport } from './routes/colleges'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +31,11 @@ const RevisionRoute = RevisionRouteImport.update({
   path: '/revision',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrganicRoute = OrganicRouteImport.update({
+  id: '/organic',
+  path: '/organic',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MistakesRoute = MistakesRouteImport.update({
   id: '/mistakes',
   path: '/mistakes',
@@ -37,6 +44,11 @@ const MistakesRoute = MistakesRouteImport.update({
 const GoalsRoute = GoalsRouteImport.update({
   id: '/goals',
   path: '/goals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollegesRoute = CollegesRouteImport.update({
+  id: '/colleges',
+  path: '/colleges',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalendarRoute = CalendarRouteImport.update({
@@ -69,8 +81,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/calendar': typeof CalendarRoute
+  '/colleges': typeof CollegesRoute
   '/goals': typeof GoalsRoute
   '/mistakes': typeof MistakesRoute
+  '/organic': typeof OrganicRoute
   '/revision': typeof RevisionRoute
   '/settings': typeof SettingsRoute
   '/c/$cid': typeof CCidRoute
@@ -80,8 +94,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/calendar': typeof CalendarRoute
+  '/colleges': typeof CollegesRoute
   '/goals': typeof GoalsRoute
   '/mistakes': typeof MistakesRoute
+  '/organic': typeof OrganicRoute
   '/revision': typeof RevisionRoute
   '/settings': typeof SettingsRoute
   '/c/$cid': typeof CCidRoute
@@ -92,8 +108,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/calendar': typeof CalendarRoute
+  '/colleges': typeof CollegesRoute
   '/goals': typeof GoalsRoute
   '/mistakes': typeof MistakesRoute
+  '/organic': typeof OrganicRoute
   '/revision': typeof RevisionRoute
   '/settings': typeof SettingsRoute
   '/c/$cid': typeof CCidRoute
@@ -105,8 +123,10 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/calendar'
+    | '/colleges'
     | '/goals'
     | '/mistakes'
+    | '/organic'
     | '/revision'
     | '/settings'
     | '/c/$cid'
@@ -116,8 +136,10 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/calendar'
+    | '/colleges'
     | '/goals'
     | '/mistakes'
+    | '/organic'
     | '/revision'
     | '/settings'
     | '/c/$cid'
@@ -127,8 +149,10 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/calendar'
+    | '/colleges'
     | '/goals'
     | '/mistakes'
+    | '/organic'
     | '/revision'
     | '/settings'
     | '/c/$cid'
@@ -139,8 +163,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyticsRoute: typeof AnalyticsRoute
   CalendarRoute: typeof CalendarRoute
+  CollegesRoute: typeof CollegesRoute
   GoalsRoute: typeof GoalsRoute
   MistakesRoute: typeof MistakesRoute
+  OrganicRoute: typeof OrganicRoute
   RevisionRoute: typeof RevisionRoute
   SettingsRoute: typeof SettingsRoute
   CCidRoute: typeof CCidRoute
@@ -163,6 +189,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RevisionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/organic': {
+      id: '/organic'
+      path: '/organic'
+      fullPath: '/organic'
+      preLoaderRoute: typeof OrganicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mistakes': {
       id: '/mistakes'
       path: '/mistakes'
@@ -175,6 +208,13 @@ declare module '@tanstack/react-router' {
       path: '/goals'
       fullPath: '/goals'
       preLoaderRoute: typeof GoalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/colleges': {
+      id: '/colleges'
+      path: '/colleges'
+      fullPath: '/colleges'
+      preLoaderRoute: typeof CollegesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calendar': {
@@ -219,8 +259,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
   CalendarRoute: CalendarRoute,
+  CollegesRoute: CollegesRoute,
   GoalsRoute: GoalsRoute,
   MistakesRoute: MistakesRoute,
+  OrganicRoute: OrganicRoute,
   RevisionRoute: RevisionRoute,
   SettingsRoute: SettingsRoute,
   CCidRoute: CCidRoute,
@@ -229,13 +271,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -102,6 +102,7 @@
   --mat: oklch(0.78 0.16 60);
   --danger: oklch(0.7 0.2 25);
   --warn: oklch(0.82 0.16 75);
+  --gold: oklch(0.83 0.14 85);
 }
 
 .dark {
@@ -147,5 +148,20 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+  }
+}
+
+@layer utilities {
+  .glass {
+    background-color: color-mix(in oklab, white 3%, transparent);
+    backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid color-mix(in oklab, white 8%, transparent);
+  }
+  .glow-gold {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--gold) 40%, transparent),
+      0 8px 32px -8px color-mix(in oklab, var(--gold) 30%, transparent);
+  }
+  .glow-priority {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--gold) 25%, transparent);
   }
 }

@@ -2,6 +2,9 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/jee/AppShell";
 import { ProgressRing } from "@/components/jee/ProgressRing";
+import { PriorityPicker } from "@/components/jee/PriorityBadge";
+import { MasteryPanel } from "@/components/jee/MasteryPanel";
+import { DependencyTree } from "@/components/jee/DependencyTree";
 import { getChapter, getSubject, ALLEN_SHEETS, PYQ_MAIN_YEARS, PYQ_ADV_YEARS } from "@/lib/jee/seed";
 import { useJeeStore } from "@/lib/jee/store";
 import { readinessScore, chapterBreakdown, WEIGHTS, readinessBand, daysSince } from "@/lib/jee/readiness";
@@ -65,6 +68,7 @@ function ChapterPage() {
               <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Chapter workspace</div>
               <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">{chapter.name}</h1>
               <p className="text-sm text-muted-foreground mt-1">{subject.name} · Last studied {last}</p>
+              <div className="mt-3"><PriorityPicker chapterId={chapter.id} current={state.priority} /></div>
             </div>
             <div className="flex items-center gap-4">
               <ProgressRing
@@ -90,6 +94,11 @@ function ChapterPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2"><MasteryPanel chapterId={chapter.id} /></div>
+          <DependencyTree chapterId={chapter.id} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
