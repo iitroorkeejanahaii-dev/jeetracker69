@@ -18,8 +18,8 @@ import { Route as CollegesRouteImport } from './routes/colleges'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SSidRouteImport } from './routes/s.$sid'
-import { Route as CCidRouteImport } from './routes/c.$cid'
+import { Route as SSidRouteImport } from './routes/s/$sid'
+import { Route as CCidRouteImport } from './routes/c/$cid'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',

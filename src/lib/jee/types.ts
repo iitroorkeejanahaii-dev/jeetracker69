@@ -86,8 +86,24 @@ export interface Revision {
   completionPct: number;
 }
 
+export interface ScheduledRevision extends Revision {
+  revisionCount: number;
+  scheduledFor?: string; // ISO date when this revision is due
+}
+
 export interface ChapterState {
+  id: string;
+  subjectId: string;
+  chapterName: string;
+  lectureCount: number;
+  sheetCount: number;
+  dppCount: number;
+  pyqCount: number;
+  revisionTarget: number;
   lectures: Lecture[];
+  sheets: ListItem[];
+  dpps: ListItem[];
+  pyqs: ListItem[];
   notes: {
     class: boolean;
     short: boolean;
@@ -95,13 +111,8 @@ export interface ChapterState {
     mindmap: boolean;
     flashcards: boolean;
   };
-  allen: Record<string, TriState>;
-  iitSheets: ListItem[];
-  allenAssignments: ListItem[];
   resources: Resource[];
-  pyqMain: Record<string, boolean>;
-  pyqAdv: Record<string, boolean>;
-  revisions: Revision[];
+  revisions: ScheduledRevision[];
   formula: {
     formulaSheet: boolean;
     ncert: boolean;
@@ -113,6 +124,8 @@ export interface ChapterState {
   confidence: number;
   hoursSpent: number;
   lastStudied?: string;
+  createdAt?: string;
+  updatedAt?: string;
   priority?: Priority;
   concepts?: Concept[];
   lastActivity?: LastActivity;
@@ -145,6 +158,9 @@ export interface Mistake {
   image?: string;
   status: MistakeStatus;
   createdAt: string;
+  importance?: number;
+  revisionCount?: number;
+  starred?: boolean;
 }
 
 export interface DailyLog {
@@ -180,4 +196,5 @@ export interface MockTest {
 export interface AppSettings {
   name: string;
   targetYear: number;
+  migrationComplete?: boolean;
 }

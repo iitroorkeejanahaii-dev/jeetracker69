@@ -83,9 +83,9 @@ function MistakesPage() {
     if (sortBy === "recent") {
       result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } else if (sortBy === "importance") {
-      result.sort((a, b) => b.importance - a.importance);
+      result.sort((a, b) => (b.importance ?? 0) - (a.importance ?? 0));
     } else if (sortBy === "revisions") {
-      result.sort((a, b) => b.revisionCount - a.revisionCount);
+      result.sort((a, b) => (b.revisionCount ?? 0) - (a.revisionCount ?? 0));
     }
 
     return result;

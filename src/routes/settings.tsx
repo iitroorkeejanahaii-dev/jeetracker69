@@ -81,6 +81,27 @@ function SettingsPage() {
             Delete all data
           </Button>
         </div>
+
+        {/* Dedication */}
+        <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] via-card to-card p-6 text-center">
+          <div className="absolute -top-16 -right-16 size-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+          <div className="relative space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-primary/80">
+              With gratitude
+            </div>
+            <p className="text-sm text-foreground/90 leading-relaxed">
+              Dedicated to my friends
+              <br />
+              <span className="text-lg font-semibold tracking-tight text-primary">
+                Siddharth &amp; Anmol
+              </span>
+            </p>
+            <p className="text-[11px] italic text-muted-foreground pt-1">
+              For every late-night doubt, every shared page of notes, and every
+              step of this journey — thank you.
+            </p>
+          </div>
+        </div>
       </div>
     </AppShell>
   );
