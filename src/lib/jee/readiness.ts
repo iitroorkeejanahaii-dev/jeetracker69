@@ -1,10 +1,10 @@
-import { PYQ_ADV_YEARS, PYQ_MAIN_YEARS, ALLEN_SHEETS } from "./seed";
 import type { ChapterState, Mistake } from "./types";
 
 export interface Breakdown {
   lectures: number;
   notes: number;
-  allen: number;
+  sheets: number;
+  dpps: number;
   resources: number;
   pyq: number;
   revisions: number;
@@ -13,20 +13,18 @@ export interface Breakdown {
 }
 
 export function chapterBreakdown(c: ChapterState, mistakes: Mistake[] = []): Breakdown {
-  const lectDone = c.lectures.filter((l) => l.done).length;
-  const lectTotal = Math.max(c.lectures.length, 1);
-  const lectures = c.lectures.length ? lectDone / lectTotal : 0;
+  const ratio = (arr: { done: boolean }[]) =>
+    arr.length ? arr.filter((x) => x.done).length / arr.length : 0;
+
+  const lectures = ratio(c.lectures);
+  const sheets = ratio(c.sheets ?? []);
+  const dpps = ratio(c.dpps ?? []);
+  const pyq = ratio(c.pyqs ?? []);
 
   const noteVals = Object.values(c.notes);
-  const notes = noteVals.filter(Boolean).length / noteVals.length;
-
-  let allenSum = 0;
-  ALLEN_SHEETS.forEach((s) => {
-    const v = c.allen[s.key];
-    if (v === "done") allenSum += 1;
-    else if (v === "progress") allenSum += 0.5;
-  });
-  const allen = allenSum / ALLEN_SHEETS.length;
+  const notes = noteVals.length
+    ? noteVals.filter(Boolean).length / noteVals.length
+    : 0;
 
   const totalResItems = c.resources.reduce((a, r) => a + r.items.length, 0);
   const doneResItems = c.resources.reduce(
@@ -35,16 +33,12 @@ export function chapterBreakdown(c: ChapterState, mistakes: Mistake[] = []): Bre
   );
   const resources = totalResItems ? doneResItems / totalResItems : 0;
 
-  const pyqMainDone = PYQ_MAIN_YEARS.filter((y) => c.pyqMain[y]).length;
-  const pyqAdvDone = PYQ_ADV_YEARS.filter((y) => c.pyqAdv[y]).length;
-  const pyq =
-    (pyqMainDone + pyqAdvDone) / (PYQ_MAIN_YEARS.length + PYQ_ADV_YEARS.length);
-
-  const revisions = Math.min(c.revisions.length / 3, 1);
+  const target = Math.max(1, c.revisionTarget ?? 3);
+  const completedRevs = c.revisions.filter((r) => r.completionPct >= 100).length;
+  const revisions = Math.min(completedRevs / target, 1);
 
   const chMistakes = mistakes;
   const cleared = chMistakes.filter((m) => m.status === "mastered").length;
-  // No mistakes logged yet → 0 credit (was 1, which gave every empty chapter a baseline 5%).
   const mistakesScore = chMistakes.length ? cleared / chMistakes.length : 0;
 
   const concepts = c.concepts ?? [];
@@ -53,7 +47,8 @@ export function chapterBreakdown(c: ChapterState, mistakes: Mistake[] = []): Bre
   return {
     lectures,
     notes,
-    allen,
+    sheets,
+    dpps,
     resources,
     pyq,
     revisions,
@@ -63,9 +58,10 @@ export function chapterBreakdown(c: ChapterState, mistakes: Mistake[] = []): Bre
 }
 
 export const WEIGHTS = {
-  lectures: 0.15,
+  lectures: 0.2,
   notes: 0.1,
-  allen: 0.2,
+  sheets: 0.15,
+  dpps: 0.1,
   resources: 0.1,
   pyq: 0.15,
   revisions: 0.15,
@@ -78,7 +74,8 @@ export function readinessScore(c: ChapterState, mistakes: Mistake[] = []): numbe
   const raw =
     b.lectures * WEIGHTS.lectures +
     b.notes * WEIGHTS.notes +
-    b.allen * WEIGHTS.allen +
+    b.sheets * WEIGHTS.sheets +
+    b.dpps * WEIGHTS.dpps +
     b.resources * WEIGHTS.resources +
     b.pyq * WEIGHTS.pyq +
     b.revisions * WEIGHTS.revisions +
